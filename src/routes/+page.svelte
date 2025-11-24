@@ -6,8 +6,8 @@
 	<main class="max-w-2xl w-full text-center space-y-8">
 		<div class="space-y-4">
 			<h1 class="text-6xl font-extrabold tracking-tight text-slate-900 sm:text-7xl">
-				Juntada <span class="text-indigo-600">app</span>
-			</h1>
+			<span class="text-indigo-600">j2rse</span>
+		</h1>
 			<p class="text-xl text-slate-600 max-w-lg mx-auto leading-relaxed">
 				La forma más simple de organizar tus encuentros. <br class="hidden sm:block" />
 				Sin complicaciones, solo buenos momentos.
@@ -28,6 +28,6 @@
 	</main>
 
 	<footer class="absolute bottom-8 text-slate-400 text-sm font-medium">
-		&copy; {new Date().getFullYear()} Juntada App
+		&copy; {new Date().getFullYear()} j2rse
 	</footer>
 </div>
