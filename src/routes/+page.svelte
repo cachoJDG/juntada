@@ -1,5 +1,5 @@
 <script lang="ts">
-	// No script needed for now
+	import { showJoinModal } from '$lib/stores/modalStore';
 </script>
 
 <div class="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 selection:bg-indigo-100 selection:text-indigo-900">
@@ -18,7 +18,10 @@
 			<a href="/create" class="px-8 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-200 transform hover:-translate-y-0.5 duration-200">
 				Crear Juntada
 			</a>
-			<button class="px-8 py-3 rounded-full bg-white text-slate-700 font-medium border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm hover:shadow-md">
+			<button 
+				onclick={() => ($showJoinModal = true)}
+				class="px-8 py-3 rounded-full bg-white text-slate-700 font-medium border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm hover:shadow-md cursor-pointer"
+			>
 				Unirse a una
 			</button>
 		</div>
