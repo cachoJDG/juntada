@@ -15,9 +15,9 @@
 		</div>
 
 		<div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-			<button class="px-8 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-200 transform hover:-translate-y-0.5 duration-200">
+			<a href="/create" class="px-8 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-200 transform hover:-translate-y-0.5 duration-200">
 				Crear Juntada
-			</button>
+			</a>
 			<button class="px-8 py-3 rounded-full bg-white text-slate-700 font-medium border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm hover:shadow-md">
 				Unirse a una
 			</button>
