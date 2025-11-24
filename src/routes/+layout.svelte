@@ -25,22 +25,25 @@
 		<div class="flex justify-between items-center h-16">
 			<!-- Logo -->
 		<a href="/" class="flex items-center gap-2 group">
-			<img src="/Logo.png" alt="juntalo" class="h-8 transition-opacity group-hover:opacity-80" />
+			<img src="/logo.svg" alt="juntalo" class="h-8 w-8 sm:h-10 sm:w-10 transition-opacity group-hover:opacity-80" />
+			<span class="text-xl sm:text-2xl font-extrabold text-indigo-600 group-hover:text-indigo-700 transition-colors">juntalo</span>
 		</a>
 
 			<!-- Navigation -->
-			<nav class="flex items-center gap-3">
+			<nav class="flex items-center gap-2 sm:gap-3">
 				<a
 					href="/create"
-					class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+					class="px-3 sm:px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
 				>
-					Crear Juntada
+					<span class="hidden sm:inline">Crear Juntada</span>
+					<span class="sm:hidden">Crear</span>
 				</a>
 				<button
 					onclick={() => ($showJoinModal = true)}
-					class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+					class="px-3 sm:px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
 				>
-					Unirse a una
+					<span class="hidden sm:inline">Unirse a una</span>
+					<span class="sm:hidden">Unirse</span>
 				</button>
 			</nav>
 		</div>
