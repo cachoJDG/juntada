@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { supabase } from '$lib/supabaseClient';
 	import { goto } from '$app/navigation';
+	import MapPicker from '$lib/components/MapPicker.svelte';
 
 	let title = '';
 	let creator_name = '';
@@ -8,6 +9,26 @@
 	let location = '';
 	let event_datetime = '';
 	let loading = false;
+	let showMapPicker = false;
+
+	function getLocation() {
+		if (!navigator.geolocation) {
+			alert('Tu navegador no soporta geolocalización');
+			return;
+		}
+
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				const lat = position.coords.latitude;
+				const lng = position.coords.longitude;
+				location = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+			},
+			(error) => {
+				console.error('Error getting location:', error);
+				alert('No se pudo obtener tu ubicación. Por favor ingrésala manualmente.');
+			}
+		);
+	}
 
 	async function handleSubmit() {
 		loading = true;
@@ -87,15 +108,33 @@
 				</div>
 				<div>
 					<label for="location" class="block text-sm font-medium text-slate-700 mb-1">Ubicación</label>
-					<input
-						id="location"
-						name="location"
-						type="text"
-						required
-						class="appearance-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-						placeholder="Ej: Parque Centenario / Calle Falsa 123"
-						bind:value={location}
-					/>
+					<div class="flex gap-2">
+						<input
+							id="location"
+							name="location"
+							type="text"
+							required
+							class="appearance-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+							placeholder="Ej: Parque Centenario / Calle Falsa 123"
+							bind:value={location}
+						/>
+						<button
+							type="button"
+							on:click={getLocation}
+							class="px-3 py-2 border border-slate-300 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+							title="Usar mi ubicación actual"
+						>
+							📍
+						</button>
+						<button
+							type="button"
+							on:click={() => (showMapPicker = true)}
+							class="px-3 py-2 border border-slate-300 rounded-md text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+							title="Seleccionar en mapa"
+						>
+							🗺️
+						</button>
+					</div>
 				</div>
 				<div>
 					<label for="event_datetime" class="block text-sm font-medium text-slate-700 mb-1">Fecha y Hora</label>
@@ -131,3 +170,13 @@
 		</div>
 	</div>
 </div>
+
+{#if showMapPicker}
+	<MapPicker
+		onConfirm={(lat, lng) => {
+			location = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+			showMapPicker = false;
+		}}
+		onCancel={() => (showMapPicker = false)}
+	/>
+{/if}
