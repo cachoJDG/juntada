@@ -242,7 +242,8 @@
 
 	async function handleRideRequest(requestId: string, status: 'accepted' | 'rejected') {
 		try {
-			const { error } = await supabase
+			// Update ride request status
+			const { error: requestError } = await supabase
 				.from('ride_requests')
 				.update({ 
 					status,
@@ -250,10 +251,26 @@
 				})
 				.eq('id', requestId);
 
-			if (error) throw error;
+			if (requestError) throw requestError;
+
+			// If accepted, decrement the driver's car capacity
+			if (status === 'accepted' && currentAttendee && currentAttendee.car_capacity > 0) {
+				const { error: capacityError } = await supabase
+					.from('event_attendees')
+					.update({ 
+						car_capacity: currentAttendee.car_capacity - 1
+					})
+					.eq('id', currentAttendee.id);
+
+				if (capacityError) throw capacityError;
+
+				// Update local state
+				currentAttendee.car_capacity -= 1;
+			}
 
 			alert(status === 'accepted' ? '¡Solicitud aceptada!' : 'Solicitud rechazada');
 			await fetchRideRequests();
+			await fetchAttendees(); // Refresh to show updated capacity
 		} catch (error) {
 			console.error('Error updating ride request:', error);
 			alert('Hubo un error al actualizar la solicitud.');
@@ -271,9 +288,14 @@
 				<h1 class="text-3xl font-extrabold text-slate-900 mb-2">{event.title}</h1>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-slate-600">
 					<div>
-						<span class="font-semibold block text-xs uppercase tracking-wider text-slate-400 mb-1">Organiza</span>
-						{event.creator_name}
-					</div>
+					<span class="font-semibold block text-xs uppercase tracking-wider text-slate-400 mb-1">Organiza</span>
+					<div class="font-medium">{event.creator_name}</div>
+					{#if event.creator_email}
+						<a href="mailto:{event.creator_email}" class="text-sm text-indigo-600 hover:underline">
+							{event.creator_email}
+						</a>
+					{/if}
+				</div>
 					<div>
 						<span class="font-semibold block text-xs uppercase tracking-wider text-slate-400 mb-1">Cuándo</span>
 						{new Date(event.event_datetime).toLocaleString('es-AR', { 
@@ -436,6 +458,11 @@
 											</div>
 											{#if attendee.origin}
 												<div class="text-sm text-slate-500 mt-1">Desde: {attendee.origin}</div>
+											{/if}
+											{#if attendee.is_driver && attendee.email}
+												<a href="mailto:{attendee.email}" class="text-sm text-indigo-600 hover:underline mt-1 block">
+													{attendee.email}
+												</a>
 											{/if}
 											{#if attendee.notes}
 												<div class="text-sm text-slate-500 italic mt-1">"{attendee.notes}"</div>
