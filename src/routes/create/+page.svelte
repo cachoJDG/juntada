@@ -33,6 +33,11 @@
 	async function handleSubmit() {
 		loading = true;
 		try {
+			// Convert datetime-local to ISO string with timezone
+			// datetime-local gives us "2025-11-28T22:50" (no timezone)
+			// We need to append the local timezone offset
+			const datetimeWithTimezone = event_datetime ? new Date(event_datetime).toISOString() : null;
+			
 			const { data, error } = await supabase
 				.from('events')
 				.insert([
@@ -41,7 +46,7 @@
 						creator_name,
 						creator_email,
 						location,
-						event_datetime
+						event_datetime: datetimeWithTimezone
 					}
 				])
 				.select();

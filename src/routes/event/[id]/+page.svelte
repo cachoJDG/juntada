@@ -276,7 +276,11 @@
 					</div>
 					<div>
 						<span class="font-semibold block text-xs uppercase tracking-wider text-slate-400 mb-1">Cuándo</span>
-						{new Date(event.event_datetime).toLocaleString()}
+						{new Date(event.event_datetime).toLocaleString('es-AR', { 
+							dateStyle: 'long', 
+							timeStyle: 'short',
+							timeZone: 'America/Argentina/Buenos_Aires'
+						})}
 					</div>
 					<div class="sm:col-span-2">
 						<span class="font-semibold block text-xs uppercase tracking-wider text-slate-400 mb-1">Dónde</span>

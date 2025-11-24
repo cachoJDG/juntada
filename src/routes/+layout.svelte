@@ -19,6 +19,34 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<!-- Global Header -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-40">
+	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+		<div class="flex justify-between items-center h-16">
+			<!-- Logo -->
+		<a href="/" class="flex items-center gap-2 group">
+			<img src="/Logo.png" alt="juntalo" class="h-8 transition-opacity group-hover:opacity-80" />
+		</a>
+
+			<!-- Navigation -->
+			<nav class="flex items-center gap-3">
+				<a
+					href="/create"
+					class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm"
+				>
+					Crear Juntada
+				</a>
+				<button
+					onclick={() => ($showJoinModal = true)}
+					class="px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200"
+				>
+					Unirse a una
+				</button>
+			</nav>
+		</div>
+	</div>
+</header>
+
 {@render children()}
 
 {#if $showJoinModal}
