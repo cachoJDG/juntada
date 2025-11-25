@@ -149,13 +149,13 @@
 				.insert([
 					{
 						event_id: eventId,
-						name,
+						name: name.trim(),
 						email: email.trim(),
-						origin,
+						origin: origin.trim(),
 						arrival_time: arrival_time || null,
 						is_driver,
 						car_capacity: is_driver ? car_capacity : null,
-						notes: notes || null
+						notes: notes ? notes.trim() : null
 					}
 				])
 				.select()
@@ -221,7 +221,7 @@
 						event_id: eventId,
 						driver_attendee_id: selectedDriverId,
 						passenger_attendee_id: currentAttendee.id,
-						message: rideRequestMessage || null,
+						message: rideRequestMessage ? rideRequestMessage.trim() : null,
 						status: 'pending'
 					}
 				]);

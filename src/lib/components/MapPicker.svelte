@@ -77,7 +77,7 @@
 		try {
 			// Use Nominatim (OpenStreetMap's geocoding service)
 			const response = await fetch(
-				`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`
+				`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery.trim())}&limit=5`
 			);
 			const results = await response.json();
 			searchResults = results;

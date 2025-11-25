@@ -42,10 +42,10 @@
 			const datetimeWithTimezone = event_datetime ? new Date(event_datetime).toISOString() : null;
 			
 			const eventData = {
-				title,
-				creator_name,
-				creator_email,
-				location,
+				title: title.trim(),
+				creator_name: creator_name.trim(),
+				creator_email: creator_email.trim(),
+				location: location.trim(),
 				event_datetime: datetimeWithTimezone
 			};
 			
