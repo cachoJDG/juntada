@@ -45,6 +45,14 @@
 					<span class="hidden sm:inline">Unirse a una</span>
 					<span class="sm:hidden">Unirse</span>
 				</button>
+				<a
+					href="/my-events"
+					class="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200"
+					title="Mis Juntadas"
+				>
+					<span class="hidden sm:inline">Mis Juntadas</span>
+					<span class="sm:hidden">📋</span>
+				</a>
 			</nav>
 		</div>
 	</div>

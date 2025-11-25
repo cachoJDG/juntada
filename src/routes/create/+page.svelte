@@ -2,6 +2,7 @@
 	import { supabase } from '$lib/supabaseClient';
 	import { goto } from '$app/navigation';
 	import MapPicker from '$lib/components/MapPicker.svelte';
+	import EventCodeModal from '$lib/components/EventCodeModal.svelte';
 
 	let title = '';
 	let creator_name = '';
@@ -10,6 +11,8 @@
 	let event_datetime = '';
 	let loading = false;
 	let showMapPicker = false;
+	let showEventCodeModal = false;
+	let createdEventId = '';
 
 	function getLocation() {
 		if (!navigator.geolocation) {
@@ -38,25 +41,47 @@
 			// We need to append the local timezone offset
 			const datetimeWithTimezone = event_datetime ? new Date(event_datetime).toISOString() : null;
 			
+			const eventData = {
+				title,
+				creator_name,
+				creator_email,
+				location,
+				event_datetime: datetimeWithTimezone
+			};
+			
+			console.log('🚀 Intentando crear juntada con los siguientes datos:', eventData);
+			console.log('📅 Fecha original:', event_datetime);
+			console.log('📅 Fecha convertida a ISO:', datetimeWithTimezone);
+			
 			const { data, error } = await supabase
 				.from('events')
-				.insert([
-					{
-						title,
-						creator_name,
-						creator_email,
-						location,
-						event_datetime: datetimeWithTimezone
-					}
-				])
+				.insert([eventData])
 				.select();
 
-			if (error) throw error;
+			console.log('📊 Respuesta de Supabase:', { data, error });
 
-			alert('¡Juntada creada con éxito!');
-			goto('/');
+			if (error) {
+				console.error('❌ Error de Supabase:', error);
+				console.error('❌ Detalles del error:', JSON.stringify(error, null, 2));
+				throw error;
+			}
+
+			console.log('✅ Juntada creada exitosamente:', data);
+		
+			// Get the event ID from the created event
+			const eventId = data && data[0] ? data[0].id : null;
+			
+			if (eventId) {
+				createdEventId = eventId;
+				showEventCodeModal = true;
+			} else {
+				alert('¡Juntada creada con éxito!');
+				goto('/');
+			}
 		} catch (error) {
-			console.error('Error creating event:', error);
+			console.error('💥 Error capturado en catch:', error);
+			console.error('💥 Tipo de error:', typeof error);
+			console.error('💥 Error completo:', JSON.stringify(error, null, 2));
 			alert('Hubo un error al crear la juntada. Por favor intenta de nuevo.');
 		} finally {
 			loading = false;
@@ -101,11 +126,12 @@
 					/>
 				</div>
 				<div>
-					<label for="creator_email" class="block text-sm font-medium text-slate-700 mb-1">Tu Email (Opcional)</label>
+					<label for="creator_email" class="block text-sm font-medium text-slate-700 mb-1">Tu Email</label>
 					<input
 						id="creator_email"
 						name="creator_email"
 						type="email"
+						required
 						class="appearance-none relative block w-full px-3 py-2 border border-slate-300 placeholder-slate-500 text-slate-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
 						placeholder="juan@ejemplo.com"
 						bind:value={creator_email}
@@ -178,10 +204,21 @@
 
 {#if showMapPicker}
 	<MapPicker
-		onConfirm={(lat, lng) => {
+		onConfirm={(lat: number, lng: number) => {
 			location = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 			showMapPicker = false;
 		}}
 		onCancel={() => (showMapPicker = false)}
 	/>
 {/if}
+
+{#if showEventCodeModal}
+	<EventCodeModal
+		eventId={createdEventId}
+		onClose={() => {
+			showEventCodeModal = false;
+			goto('/');
+		}}
+	/>
+{/if}
+
