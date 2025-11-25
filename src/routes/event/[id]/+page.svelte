@@ -34,6 +34,15 @@
 	let rideRequestMessage = $state('');
 	let requestLoading = $state(false);
 
+	// Derived State
+	let drivers = $derived(attendees.filter(a => a.is_driver));
+	let passengers = $derived(attendees.filter(a => !a.is_driver));
+	let mySentRequests = $derived(
+		currentAttendee && !currentAttendee.is_driver
+			? rideRequests.filter(r => r.passenger_attendee_id === currentAttendee.id)
+			: []
+	);
+
 	onMount(async () => {
 		await fetchEventDetails();
 		await fetchAttendees();
@@ -82,7 +91,8 @@
 			.from('ride_requests')
 			.select(`
 				*,
-				passenger:event_attendees!ride_requests_passenger_attendee_id_fkey(name, origin)
+				passenger:event_attendees!ride_requests_passenger_attendee_id_fkey(name, origin),
+				driver:event_attendees!ride_requests_driver_attendee_id_fkey(name, car_capacity)
 			`)
 			.eq('event_id', eventId);
 
@@ -91,6 +101,11 @@
 		} else {
 			rideRequests = data || [];
 		}
+	}
+
+	function copyLink() {
+		navigator.clipboard.writeText(window.location.href);
+		alert('¡Link copiado al portapapeles!');
 	}
 
 	async function loginWithEmail(emailToLogin: string) {
@@ -285,7 +300,16 @@
 		{:else if event}
 			<!-- Event Header -->
 			<div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 sm:p-8">
-				<h1 class="text-3xl font-extrabold text-slate-900 mb-2">{event.title}</h1>
+				<div class="flex justify-between items-start mb-2">
+					<h1 class="text-3xl font-extrabold text-slate-900">{event.title}</h1>
+					<button
+						onclick={copyLink}
+						class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+						title="Copiar link del evento"
+					>
+						🔗 <span class="hidden sm:inline">Compartir</span>
+					</button>
+				</div>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-slate-600">
 					<div>
 					<span class="font-semibold block text-xs uppercase tracking-wider text-slate-400 mb-1">Organiza</span>
@@ -348,6 +372,42 @@
 										</span>
 										<span class="text-sm text-slate-600">{currentAttendee.car_capacity} lugares</span>
 									</div>
+								{:else}
+									<!-- Passenger Dashboard -->
+									{#if mySentRequests.length > 0}
+										<div class="mt-3 pt-3 border-t border-slate-100">
+											<h4 class="text-sm font-bold text-slate-900 mb-2">Mis Solicitudes de Viaje</h4>
+											<div class="space-y-2">
+												{#each mySentRequests as request}
+													<div class="bg-slate-50 rounded p-2 text-sm border border-slate-200">
+														<div class="flex justify-between items-center mb-1">
+															<span class="font-medium text-slate-700">
+																A: {request.driver?.name || 'Conductor'}
+															</span>
+															{#if request.status === 'pending'}
+																<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+																	⏳ Pendiente
+																</span>
+															{:else if request.status === 'accepted'}
+																<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+																	✅ Aceptada
+																</span>
+															{:else}
+																<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+																	❌ Rechazada
+																</span>
+															{/if}
+														</div>
+														{#if request.status === 'accepted'}
+															<div class="text-xs text-green-700 mt-1">
+																¡Viajas con {request.driver?.name}! 🎉
+															</div>
+														{/if}
+													</div>
+												{/each}
+											</div>
+										</div>
+									{/if}
 								{/if}
 								{#if currentAttendee.notes}
 									<div class="text-sm">
@@ -438,55 +498,101 @@
 				</div>
 
 				<!-- Attendees List -->
-				<div class="space-y-4">
-					<h2 class="text-xl font-bold text-slate-900">Asistentes ({attendees.length})</h2>
-					<div class="space-y-3">
-						{#if attendees.length === 0}
-							<p class="text-slate-500 italic">Aún no hay nadie anotado. ¡Sé el primero!</p>
+				<!-- Attendees List -->
+				<div class="space-y-8">
+					<!-- Drivers Section -->
+					<div>
+						<h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+							🚗 Conductores <span class="text-sm font-normal text-slate-500">({drivers.length})</span>
+						</h2>
+						{#if drivers.length === 0}
+							<p class="text-slate-500 italic bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">
+								No hay conductores anotados todavía.
+							</p>
 						{:else}
-							{#each attendees as attendee}
-								<div class="bg-white rounded-lg p-4 border border-slate-100 shadow-sm">
-									<div class="flex justify-between items-start">
-										<div class="flex-1">
-											<div class="font-medium text-slate-900 flex items-center gap-2">
-												{attendee.name}
-												{#if attendee.is_driver}
-													<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-														Conductor 🚗
-													</span>
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+								{#each drivers as driver}
+									<div class="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+										<!-- Capacity Indicator Bar -->
+										<div class="absolute top-0 left-0 right-0 h-1 bg-slate-100">
+											<div 
+												class="h-full {driver.car_capacity > 0 ? 'bg-green-500' : 'bg-red-500'}" 
+												style="width: {driver.car_capacity > 0 ? '100%' : '100%'}"
+											></div>
+										</div>
+
+										<div class="flex justify-between items-start mt-2">
+											<div>
+												<div class="font-bold text-lg text-slate-900">{driver.name}</div>
+												{#if driver.origin}
+													<div class="text-sm text-slate-600 flex items-center gap-1 mt-1">
+														📍 {driver.origin}
+													</div>
+												{/if}
+												{#if driver.email}
+													<a href="mailto:{driver.email}" class="text-xs text-indigo-600 hover:underline mt-1 block">
+														{driver.email}
+													</a>
+												{/if}
+												{#if driver.notes}
+													<div class="text-sm text-slate-500 italic mt-2 bg-slate-50 p-2 rounded">
+														"{driver.notes}"
+													</div>
 												{/if}
 											</div>
-											{#if attendee.origin}
-												<div class="text-sm text-slate-500 mt-1">Desde: {attendee.origin}</div>
-											{/if}
-											{#if attendee.is_driver && attendee.email}
-												<a href="mailto:{attendee.email}" class="text-sm text-indigo-600 hover:underline mt-1 block">
-													{attendee.email}
-												</a>
-											{/if}
-											{#if attendee.notes}
-												<div class="text-sm text-slate-500 italic mt-1">"{attendee.notes}"</div>
-											{/if}
-										</div>
-										{#if attendee.is_driver}
-											<div class="flex items-center gap-3">
-												<div class="text-right">
-													<div class="text-xs text-slate-500 font-medium">Lugares</div>
-													<div class="text-lg font-bold text-indigo-600">{attendee.car_capacity}</div>
+											<div class="text-right">
+												<div class="text-xs text-slate-500 font-medium uppercase tracking-wide">Lugares</div>
+												<div class="text-2xl font-bold {driver.car_capacity > 0 ? 'text-green-600' : 'text-red-500'}">
+													{driver.car_capacity}
 												</div>
-												{#if currentAttendee && currentAttendee.id !== attendee.id}
+											</div>
+										</div>
+
+										<div class="mt-4 pt-4 border-t border-slate-100 flex justify-end">
+											{#if currentAttendee && currentAttendee.id !== driver.id}
+												{#if driver.car_capacity > 0}
 													<button
-														onclick={() => openRideRequestModal(attendee.id)}
-														class="px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors"
+														onclick={() => openRideRequestModal(driver.id)}
+														class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
 													>
-														Pedir Lugar
+														Pedir Lugar 🙋‍♂️
+													</button>
+												{:else}
+													<button disabled class="w-full sm:w-auto px-4 py-2 bg-slate-100 text-slate-400 text-sm font-medium rounded-lg cursor-not-allowed">
+														Completo 🚫
 													</button>
 												{/if}
-											</div>
-										{/if}
+											{/if}
+										</div>
 									</div>
-								</div>
-							{/each}
+								{/each}
+							</div>
+						{/if}
+					</div>
+
+					<!-- Passengers Section -->
+					<div>
+						<h2 class="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
+							🚶 Pasajeros <span class="text-sm font-normal text-slate-500">({passengers.length})</span>
+						</h2>
+						{#if passengers.length === 0}
+							<p class="text-slate-500 italic">No hay pasajeros anotados todavía.</p>
+						{:else}
+							<div class="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+								{#each passengers as passenger}
+									<div class="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors">
+										<div>
+											<div class="font-medium text-slate-900">{passenger.name}</div>
+											{#if passenger.origin}
+												<div class="text-sm text-slate-600">Desde: {passenger.origin}</div>
+											{/if}
+											{#if passenger.notes}
+												<div class="text-xs text-slate-500 italic mt-1">"{passenger.notes}"</div>
+											{/if}
+										</div>
+									</div>
+								{/each}
+							</div>
 						{/if}
 					</div>
 
